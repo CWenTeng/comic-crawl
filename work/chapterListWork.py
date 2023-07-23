@@ -26,6 +26,8 @@ class ChapterListWork:
                 if hasattr(plugin, functionName):
                     parseFunction = getattr(plugin, functionName)
                     subtaskList = parseFunction(content, task)
+                    while(workQueue.get_size("imgListQueue")>1000):
+                        time.sleep(1)
                     for subtask in subtaskList:
                         workQueue.put_queue("imgListQueue",subtask)
                 else:
@@ -46,7 +48,6 @@ class ChapterListWork:
 
     # 章节列表
     def work_thread(self):
-
         while True:
             try:
                 task = workQueue.get_queue("chapterListQueue")
@@ -59,6 +60,21 @@ class ChapterListWork:
                 except_log.error(
                     f'task_url:{task.task_url};   error:{traceback.format_exc()}'
                 )
+
+        # with ThreadPoolExecutor(max_workers=config.CHAPTER_LIST_THREAD) as executor:
+        #     while True:
+        #         try:
+        #             task = workQueue.get_queue("chapterListQueue")
+        #             if task:
+        #                 executor.submit(self.doCrawl,task)
+        #                 # self.executor.submit(self.doCrawl, task)
+        #                 # self.doCrawl(task)
+        #             else:
+        #                 time.sleep(10)
+        #         except:
+        #             except_log.error(
+        #                 f'task_url:{task.task_url};   error:{traceback.format_exc()}'
+        #             )
 
     def run(self):
         for i in range(config.CHAPTER_LIST_THREAD):

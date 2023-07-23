@@ -118,11 +118,7 @@ def chapter_list_parse(html, task):
 
     # 入库最后一集 title_id，下次从该 title_id 开始抓取
     # 入库集数 title_num ，下次从该 title_num 开始计数
-    sql = f"""
-    UPDATE crawl_task 
-    SET crawl_flag = {title_id}, crawl_num = {crawl_num} 
-    WHERE id = {task.task_id}
-    """
+    sql = f"""UPDATE crawl_task SET crawl_flag = {title_id}, crawl_num = {crawl_num} WHERE id = {task.task_id}"""
     try:
         sqlUtils.exeSql(sql)
     except:

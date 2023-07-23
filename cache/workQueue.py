@@ -27,3 +27,7 @@ def get_queue(queueName):
     queue_log.info(f"{queueName} size: {WORK_QUEUE_DICT[queueName].qsize()}")
     return WORK_QUEUE_DICT[queueName].get()
         
+def get_size(queueName):
+    queue_log.info(f"{queueName} size: {WORK_QUEUE_DICT[queueName].qsize()}")
+    return WORK_QUEUE_DICT[queueName].qsize()
+        

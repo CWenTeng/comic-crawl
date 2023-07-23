@@ -13,6 +13,13 @@ from util.logUtil import download_log
 
 # 格式化
 def formatting(t):
+    r = re.search('EroCool.*', t)
+    try:
+        r.group()
+    except:
+        pass
+    else:
+        t = t.replace(r.group(), "")
     t = t.replace("|", " ") \
         .replace("?", " ") \
         .replace("*", " ") \

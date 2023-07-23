@@ -25,6 +25,9 @@ class ImgListWork:
                     pluginFunction = getattr(plugin,functionName)
                     subtaskList = pluginFunction(content, task)
                     # subtaskList = plugin.img_list_parse(content, task)
+                    while(workQueue.get_size("imgQueue")>1000):
+                        time.sleep(1)
+                    
                     for subtask in subtaskList:
                         workQueue.put_queue("imgQueue", subtask)
                     # parseFunction = getattr(plugin, functionName)
@@ -64,7 +67,20 @@ class ImgListWork:
             except:
                 except_log.error(
                     f'task_url:{task.task_url};   error:{traceback.format_exc()}'
-                )
+               )
+        # with ThreadPoolExecutor(max_workers=config.IMG_LIST_THREAD) as executor:
+        #     while True:
+        #         try:
+        #             task = workQueue.get_queue("imgListQueue")
+        #             if task:
+        #                 executor.submit(self.doCrawl, task)
+        #                 # self.doCrawl(task)
+        #             else:
+        #                 time.sleep(10)
+        #         except:
+        #             except_log.error(
+        #                 f'task_url:{task.task_url};   error:{traceback.format_exc()}'
+        #             )
 
     def run(self):
         for i in range(config.IMG_LIST_THREAD):

@@ -17,12 +17,11 @@ def chapter_list_parse(html, task):
     path = config.PATH
     title_num_list = []
     head = {
-        'referer': 'https://www.36mh.net/',
     }
     # 漫画列表
-    lis = html.xpath("//div[@class='chapter-body clearfix']/ul/li")
+    lis = html.xpath("//div[@class='stui-pannel_bd col-pd clearfix']/ul/li")
     try:
-        book_title = html.xpath("//div[@class='book-title']/h1/span/text()")[0]
+        book_title = html.xpath("//div[@class='stui-content__detail']/h1[@class='title']/text()")[0]
     except:
         book_title = str(time.time())
     try:
@@ -31,7 +30,7 @@ def chapter_list_parse(html, task):
         if not os.path.exists(book_filePath):
             os.mkdir(book_filePath)
     except:
-        parse_log.error(f'36mh book_title:{book_title};     book_url:{task.task_url};     error:{traceback.format_exc()}')
+        parse_log.error(f'baiman book_title:{book_title};     book_url:{task.task_url};     error:{traceback.format_exc()}')
         raise
     # 集数
     crawl_num = task.crawl_num
@@ -47,27 +46,27 @@ def chapter_list_parse(html, task):
             r = re.search(r'\d+(?=.html)', lastUrl)
             last_id = int(r.group())
             if fist_id > last_id:
-                parse_log.debug('36mh 翻转列表  fist_id:%s;  last_id:%s;' %
+                parse_log.debug('baiman 翻转列表  fist_id:%s;  last_id:%s;' %
                                 (fist_id, last_id))
                 lis = lis[::-1]
         except:
-            parse_log.error(f'36mh 列表排序失败    36mh book_title:{book_title};     book_url:{task.task_url};     error:{traceback.format_exc()}')
+            parse_log.error(f'baiman 列表排序失败    baiman book_title:{book_title};     book_url:{task.task_url};     error:{traceback.format_exc()}')
         else:
-            parse_log.info('36mh  book_title:%s;  size:%d' %
+            parse_log.info('baiman  book_title:%s;  size:%d' %
                         (book_title, len(lis)))
 
     for li in lis:
         try:
             url = li.xpath("./a/@href")[0]
-            if 'http' not in url:
-                url = 'https://www.36mh.net' + url
-            title = li.xpath("./a/span/text()")
+            # if 'http' not in url:
+            #     url = 'https://www.36mh.net' + url
+            title = li.xpath("./a/text()")
             if title:
                 title = title[0]
             # 匹配集数
             title_num = ''
-            # r = re.search(r'(?<=第)\d+(?=话)',title)
-            r = re.search(r'\d+(?=.html)', url)
+            r = re.search(r'(?<=第)\d+(?=话)',title)
+            # r = re.search(r'\d+(?=.html)', url)
             try:
                 # title_num = r.group()
                 title_id = r.group()
@@ -84,7 +83,7 @@ def chapter_list_parse(html, task):
             if task.crawl_flag:
                 if int(title_id) <= int(task.crawl_flag):
                     parse_log.debug(
-                        '36mh 增量过滤  chapter:%s;  title:%s;  title_id:%s' %
+                        'baiman 增量过滤  chapter:%s;  title:%s;  title_id:%s' %
                         (url, title, title_id))
                     continue
             # # 补全集数编号位数
@@ -108,7 +107,7 @@ def chapter_list_parse(html, task):
                     break
                 title_num = '0' + title_num
             title = title_num + '_' + title
-            parse_log.info('36mh chapter:%s;  title:%s;  title_num:%s' %
+            parse_log.info('baiman chapter:%s;  title:%s;  title_num:%s' %
                            (url, title, title_num))
             # 入章节列表队列
             imglisttask = ImgListTask(task_url=url,
@@ -121,7 +120,7 @@ def chapter_list_parse(html, task):
             imgListTaskList.append(imglisttask)
             # workQueue.put_queue("imgListQueue",imglisttask)
         except:
-            parse_log.error('36mh title:%s; error:%s' %
+            parse_log.error('baiman title:%s; error:%s' %
                             (title, str(traceback.format_exc())))
         crawl_num += 1
 
@@ -136,16 +135,20 @@ def chapter_list_parse(html, task):
         parse_log.warning(f"title_id:{title_id}  crawl_flag:{task.crawl_flag}")
         title_id = int(task.crawl_flag)
 
-    sql = f"""UPDATE crawl_task SET crawl_flag = {title_id}, crawl_num = {crawl_num} WHERE id = {task.task_id}"""
+    sql = f"""
+    UPDATE crawl_task 
+    SET crawl_flag = {title_id}, crawl_num = {crawl_num} 
+    WHERE id = {task.task_id}
+    """
     try:
         sqlUtils.exeSql(sql)
     except:
-        parse_log.error('36mh title:%s; SQL error:%s' %
+        parse_log.error('baiman title:%s; SQL error:%s' %
                         (title, str(traceback.format_exc())))
     return imgListTaskList
 
 
-# 36mh 图片列表
+# baiman 图片列表
 def img_list_parse(html, task):
     imgTaskList = []
     try:
@@ -157,7 +160,7 @@ def img_list_parse(html, task):
         if not os.path.exists(img_filePath):
             os.mkdir(img_filePath)
     except:
-        parse_log.error('36mh  book_title:%s; error:%s' % (book_title, str(traceback.format_exc())))
+        parse_log.error('baiman  book_title:%s; error:%s' % (book_title, str(traceback.format_exc())))
         raise
     chapterPath = ""
     path = config.PATH
@@ -166,60 +169,31 @@ def img_list_parse(html, task):
     num = 1
     # 匹配图片列表
     try:
-        imgListRule = "(?<=;var chapterImages = \[).*(?=])"
-        r = re.search(imgListRule, html)
-        chapterImages = r.group()
-        chapterImages = chapterImages.replace('"', '')
-        imgList = re.split(',', chapterImages)
-        parse_log.info('36mh  size:%d;  imgList:%s' % (len(imgList), imgList))
+        r = re.search("(?<=var txt_url=\").*(?=\")", html)
+        imgListUrl = r.group()
+        imgListContent = Download().page_down(imgListUrl)
+        imgListHtml = etree.HTML(imgListContent)
+        imgList = imgListHtml.xpath("//p/img/@src")
+        
+        parse_log.info('baiman  size:%d;  imgList:%s' % (len(imgList), imgList))
     except:
-        parse_log.error('36mh Task url:%s;   Regular rule:%s;  error:%s' % (task.task_url, imgListRule, str(traceback.format_exc())))
+        parse_log.error('baiman Task url:%s;   Regular rule:%s;  error:%s' % (task.task_url, str(traceback.format_exc())))
         raise
-#   站点取消分配图片服务器功能
-    # 匹配图片服务器路径
-    try:
-        imgServerRule = '(?<=;var chapterPath = ").*\d(?=/";)'
-        r1 = re.search(imgServerRule, html)
-        chapterPath = r1.group()
-        parse_log.info('36mh chapterPath:%s' % (chapterPath))
-    except:
-        parse_log.warning(f'36mh; this book no configuration imgServerAddres;  Task url:{task.task_url};   Regular rule:{imgServerRule};')
-        #    raise
-    
-    # 下载js文件，从js中匹配HOST地址
-    host = ""
 
     for img in imgList:
         try:
             # 格式化链接特殊字符
             imgUrl = img.replace('\/','/')
             img_num = str(num)
-            # 站点取消分配图片服务器功能
-            if chapterPath and (chapterPath not in imgUrl) and ('http' not in imgUrl):
-                if host == "":
-                    try:
-                        jsUrl = "https://www.36manhua.com/js/config.js"
-                        jsContent = Download().page_down(jsUrl)
-                        hostRule = '(?<= resHost: \[\{"name":"自动选择","domain":\[").*?(?=")'        
-                        r2 = re.search(hostRule, jsContent)
-                        host = r2.group()
-                        parse_log.info('36mh host:%s' % (host))
-                    except:
-                        host = False
-                        parse_log.warning(f'36mh; get host fail from https://www.36mh.com/js/config.js;   Task url:{task.task_url};   hostRule{hostRule};  error:{traceback.format_exc()}')
-                imgUrl = '/'.join([chapterPath, imgUrl])
-                if host:
-                    imgUrl = host + imgUrl
-                else:
-                    imgUrl = 'https://img001.arc-theday.com/' + imgUrl
+
             # 补全集数编号位数
             while img_num:
                 if len(img_num) >= 3:
                     break
                 img_num = '0' + img_num
-            parse_log.info('36mh  chapter:%s;  img_filePath:%s;  img_num:%s' % (imgUrl, img_filePath, img_num))
+            parse_log.info('baiman  chapter:%s;  img_filePath:%s;  img_num:%s' % (imgUrl, img_filePath, img_num))
         except:
-            parse_log.warning('36mh  img_filePath:%s; warn:%s' % (img_filePath, str(traceback.format_exc())))
+            parse_log.warning('baiman  img_filePath:%s; warn:%s' % (img_filePath, str(traceback.format_exc())))
         else:
             # 入章节列表队列
             imgName = img_num + '.jpg'

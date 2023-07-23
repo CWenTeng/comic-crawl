@@ -1,3 +1,4 @@
+from download.baseDownload import Download
 from task.imgListTask import ImgListTask
 from util.logUtil import parse_log
 import traceback
@@ -140,11 +141,7 @@ def chapter_list_parse(html, task):
 
     # 入库最后一集 title_id，下次从该 title_id 开始抓取
     # 入库集数 title_num ，下次从该 title_num 开始计数
-    sql = f"""
-    UPDATE crawl_task 
-    SET crawl_flag = {title_id}, crawl_num = {crawl_num} 
-    WHERE id = {task.task_id}
-    """
+    sql = f"""UPDATE crawl_task SET crawl_flag = {title_id}, crawl_num = {crawl_num} WHERE id = {task.task_id}"""
     try:
         sqlUtils.exeSql(sql)
     except:
@@ -176,7 +173,7 @@ def img_list_parse(html, task):
     # 匹配图片列表
     try:
         try:
-            packed = re.search(r'(?<=cp ?\= ?").*(?=";)',html).group()
+            packed = re.search(r'((?<=cp \= ")|(?<=cp\=")).*(?=";).*(?=";)',html).group()
             chapterImages = utils.runJs(II_MANHUA_JS['js'], II_MANHUA_JS['funcName'],packed)
             parse_log.info(f'{task.site_name}  移动端解析成功')
         except: 
@@ -194,12 +191,36 @@ def img_list_parse(html, task):
     except:
         parse_log.error(f'{task.site_name} error:{str(traceback.format_exc())}')
         raise
+
+
+    # # 获取图片服务器地址
+    # jsUrl = "https://m.iimh.net/skin/main.js?v=53"
+    # hostRule = '(?<=(?<!// )host: ").*(?=",)'        
+    # try:
+    #     jsContent = Download().page_down(jsUrl)
+    #     r2 = re.search(hostRule, jsContent)
+    #     imgHost = r2.group()
+    #     parse_log.info('host:%s' % (imgHost))
+    #     if "http" not in imgHost:
+    #         raise
+    # except:
+    #     imgHost = "https://res.img.hsyuanpeng.com"
+    #     parse_log.warning(f'get host fail from  {jsUrl}   Task url:{task.task_url};   hostRule{hostRule};  error:{traceback.format_exc()}')
+    imgHost = "https://res.img.hsyuanpeng.com/"
+
+    # try:
+        
+    #     "
+    #     (?<=(?<!// )host: ").*(?=",)
+    # except:
+    #     imgHost = 'https://res.img.bzgvw.com/'
+
     for img in imgList:
         try:
             # 格式化链接特殊字符
             imgUrl = img.replace('\/','/')
             if 'http://' not in imgUrl:
-                imgUrl = 'https://res.img.17zujuan.com/' + imgUrl
+                imgUrl = imgHost + imgUrl
             img_num = str(num)
             # 补全集数编号位数
             while img_num:

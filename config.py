@@ -2,7 +2,7 @@
 DOWNLOAD_RETRY = 3  # 下载重试次数
 RETRY = 7  # 放回队列重试次数 -1无限重试
 TIMEOUT = 50  # 最大超时
-COOL_DOWN = 10  # 冷却
+COOL_DOWN = 3  # 冷却
 PATH = '/home/pi/share/share1/comic'  # 下载路径
 # PATH = 'G:/123'    #下载路径
 # PATH = 'D:/'    #下载路径

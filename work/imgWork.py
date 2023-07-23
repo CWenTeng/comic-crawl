@@ -22,9 +22,9 @@ class ImgWork:
             if task.retry < config.RETRY or config.RETRY == -1:
                 task.retry += 1
                 workQueue.put_queue("imgQueue", task)
-                download_log.warning('放回队列重试; task_url:{task.imgUrl};  retry:{task.retry}')
+                download_log.warning(f'放回队列重试; task_url:{task.imgUrl};  retry:{task.retry}')
             else:
-                download_log.warning('重试失败;  task_url:{task.imgUrl};  retry:{task.retry}')
+                download_log.warning(f'重试失败;  task_url:{task.imgUrl};  retry:{task.retry}')
 
     def work_thread(self):
         try:

@@ -31,6 +31,7 @@ class Download:
             try:
                 response = requests.get(task_url,
                                         headers=self.headers,
+                                        verify=False,
                                         timeout=config.TIMEOUT)
                 # 取页面编码格式进行解码
                 try:
@@ -86,18 +87,11 @@ class Download:
             time.sleep(config.COOL_DOWN * random.random() * count)
             self.headers.update(config.IMG_HEAD)
             try:
-                # 下载图片
-                if count % 2 == 0:
-                    res = requests.request('GET',
-                                           fileUrl,
-                                           headers=self.headers,
-                                           timeout=timeout)
-                else:
-                    res = requests.request('GET',
-                                           fileUrl,
-                                           headers=self.headers,
-                                           timeout=timeout,
-                                           verify=False)
+                res = requests.request('GET',
+                                        fileUrl,
+                                        headers=self.headers,
+                                        timeout=timeout,
+                                        verify=False)
                 # 404 跳出重试
                 if res.status_code == 404:
                     download_log.debug('fileUrl:%s;  retry:%s  code:404' %
