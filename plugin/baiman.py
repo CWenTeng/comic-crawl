@@ -71,14 +71,15 @@ def chapter_list_parse(html, task):
                 # title_num = r.group()
                 title_id = r.group()
             except:
-                # try:
-                #     r = re.search(r'\d{1,3}',title)
-                #     title_num = r.group()
-                # except:
-                #     parse_log.error('title:%s; error:%s'%(title,str(traceback.format_exc())))
-                parse_log.error('title:%s; title_id:%s; error:%s' %
-                                (title, title_id, str(traceback.format_exc())))
-                continue
+                try:
+                    r = re.search(r'\d+',title)
+                    title_id = r.group()
+                    # title_num = r.group()
+                except:
+                    # parse_log.error('title:%s; error:%s'%(title,str(traceback.format_exc())))
+                    parse_log.error('title:%s; title_id:%s; error:%s' %
+                                    (title, title_id, str(traceback.format_exc())))
+                    continue
             # 增量抓取，过滤历史数据
             if task.crawl_flag:
                 if int(title_id) <= int(task.crawl_flag):
