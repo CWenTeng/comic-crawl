@@ -93,16 +93,27 @@ if __name__ == '__main__':
                 #     pretreatmentFunction = getattr(TaskPretreatment, functionName)
                 #     pretreatmentFunction)
                 head = {}
-
-                # 拼任务
-                task = ChapterListTask(task_url=task_url,
-                                    task_id=task_id,
-                                    head=head,
-                                    crawl_flag=crawl_flag,
-                                    crawl_num=crawl_num,
-                                    site_name=site_name)
-                # 入队列
-                workQueue.put_queue("chapterListQueue",task)
+                if site_name in [
+                    'erocool',
+                    'hentaidock',
+                    ]:
+                    # 拼任务
+                    task = ChapterListTask(task_url=task_url,
+                                            head=head,
+                                            task_id=task_id,
+                                            site_name=site_name)
+                    # 入队列
+                    workQueue.put_queue("imgListQueue", task)
+                else:
+                    # 拼任务
+                    task = ChapterListTask(task_url=task_url,
+                                        task_id=task_id,
+                                        head=head,
+                                        crawl_flag=crawl_flag,
+                                        crawl_num=crawl_num,
+                                        site_name=site_name)
+                    # 入队列
+                    workQueue.put_queue("chapterListQueue",task)
                     
                 schedule_log.info('schedule success: %s' % (str(data)))
         except:
