@@ -15,7 +15,7 @@ class ImgDownload(baseDownload.Download):
             # 下载图片
             if self.file_download(task.imgUrl, imgPath):
                 # 上传
-                return True
+                return imgPath
         except:
             download_log.error(
                 f'imgUrl:{task.imgUrl};  retry:{task.retry}  error:{traceback.format_exc()}'

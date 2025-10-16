@@ -16,8 +16,10 @@ class ImgWork:
 
     def doCrawl(self, task):
         imgDownload = ImgDownload(headers=task.head)
-        content = imgDownload.doDown(task)
-        if not content:
+        imgPath = imgDownload.doDown(task)
+        #imgPath = imgDownload.down_To_up(task)
+
+        if not imgPath:
             # 重试
             if task.retry < config.RETRY or config.RETRY == -1:
                 task.retry += 1
