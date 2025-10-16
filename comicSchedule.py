@@ -66,14 +66,14 @@ if __name__ == '__main__':
             if task_status == 1:
                 sql = """
                 UPDATE crawl_task 
-                SET last_crawl_time = NOW(), next_crawl_time = DATE_ADD(NOW(), INTERVAL + {crawl_cyclicity} MINUTE) 
+                SET last_crawl_time = NOW(), next_crawl_time = NOW() + INTERVAL '{crawl_cyclicity} min'
                 WHERE id = {task_id}
                 """.format(crawl_cyclicity=crawl_cyclicity,
                             task_id=task_id)
             # 单次任务调出后状态置为 2
             elif task_status == 0:
                 sql = """UPDATE crawl_task 
-                SET task_status = 2, last_crawl_time = NOW(), next_crawl_time = DATE_ADD(NOW(), INTERVAL + {crawl_cyclicity} MINUTE) 
+                SET task_status = 2, last_crawl_time = NOW(), next_crawl_time = NOW() + INTERVAL '{crawl_cyclicity} min'
                 WHERE id = {task_id}
                 """.format(crawl_cyclicity=crawl_cyclicity,
                             task_id=task_id)

@@ -65,7 +65,7 @@ def chapter_list_parse(html, task):
                 title = title[0]
             # 匹配集数
             title_num = ''
-            r = re.search(r'(?<=第)\d+(?=话)',title)
+            r = re.search(r'(?<=第)\d+(?=话|回)',title)
             # r = re.search(r'\d+(?=.html)', url)
             try:
                 # title_num = r.group()
@@ -74,6 +74,11 @@ def chapter_list_parse(html, task):
                 try:
                     r = re.search(r'\d+',title)
                     title_id = r.group()
+                    if title == '第四二四话·808号':
+                        parse_log.debug(
+                            'baiman 过滤指定title  chapter:%s;  title:%s;  title_id:%s' %
+                            (url, title, title_id))
+                        continue
                     # title_num = r.group()
                 except:
                     # parse_log.error('title:%s; error:%s'%(title,str(traceback.format_exc())))

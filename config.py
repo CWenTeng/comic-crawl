@@ -7,7 +7,7 @@ PATH = '/home/pi/share/share1/comic'  # 下载路径
 # PATH = 'G:/123'    #下载路径
 # PATH = 'D:/'    #下载路径
 ##################### gofast #######################
-GOFATS_URL = 'http://localhost:8080/group1/upload'
+GOFATS_URL = 'http://192.168.50.107/fastdfs/group1/upload'
 #################### 图片下载线程数 #################
 IMG_DOWNLOAD_THREAD = 3
 # 图片列表
@@ -44,13 +44,21 @@ IMG_HEAD = {
 }
 
 ###################### SQL #########################
+# DB_INFO = {
+#     'host': '192.168.1.107',
+#     'port': 3306,
+#     'user': 'crawl',
+#     'password': 'crawlpi',
+#     'db': 'crawl',
+#     # 'charset': config_template['MYSQL']['CHARSET'],
+#     'maxconnections': 3,  # 连接池最大连接数量
+#     # 'cursorclass': pymysql.cursors.DictCursor
+# }
 DB_INFO = {
-    'host': '192.168.1.107',
-    'port': 3306,
+    'host': '192.168.50.106',
+    'port': 5432,
     'user': 'crawl',
-    'password': 'crawlpi',
-    'db': 'crawl',
-    # 'charset': config_template['MYSQL']['CHARSET'],
+    'password': 'crawl',
+    'database': 'crawldb',
     'maxconnections': 3,  # 连接池最大连接数量
-    # 'cursorclass': pymysql.cursors.DictCursor
 }

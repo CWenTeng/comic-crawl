@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import time
 import traceback
@@ -50,12 +51,9 @@ class Download:
                 response.close()
             except:
                 count += 1
-                download_log.debug(
-                    'task_url:%s;  retry:%s  error:%s' %
-                    (task_url, count, str(traceback.format_exc())))
+                download_log.debug(f'task_url:{task_url};  retry:{count}  error:{traceback.format_exc()}')
             else:
-                download_log.info('download successful task_url:%s;' %
-                                  (task_url))
+                download_log.info(f'download successful task_url:{task_url}')
                 return html
         return False
 
@@ -66,21 +64,19 @@ class Download:
 
     # upload 上传
     def file_upload(self, filePath, upUrl=config.GOFATS_URL):
-        f = open(filePath, 'rb')
-        files = {'file': f}
         options = {'output': 'json', 'path': '', 'scene': ''}
-        res = requests.request('POST', upUrl, data=options, files=files)
-        f.close()
-        return res
+        count = 1
+        while count < config.DOWNLOAD_RETRY:
+            count += 1
+            with open(filePath, 'rb') as f:
+                files = {'file': f}
+                res = requests.request('POST', upUrl, data=options, files=files)
+                return res
+        return False
 
     # download 下载 成功返回True，失败返回False
-    def file_download(self,
-                      fileUrl,
-                      filePath,
-                      timeout=config.TIMEOUT):
-        download_log.info(
-            f'downloading......   imgUrl:{fileUrl};  purl:{filePath};'
-        )
+    def file_download(self, fileUrl, filePath, timeout=config.TIMEOUT):
+        download_log.info(f'downloading......   imgUrl:{fileUrl};  purl:{filePath}')
         count = 1
         # 失败则重试
         while count < config.DOWNLOAD_RETRY:
@@ -94,8 +90,7 @@ class Download:
                                         verify=False)
                 # 404 跳出重试
                 if res.status_code == 404:
-                    download_log.debug('fileUrl:%s;  retry:%s  code:404' %
-                                       (fileUrl, count))
+                    download_log.debug(f'fileUrl:{fileUrl}  retry:{count}  code:404')
                     return False
                 if res:
                     with open(filePath, 'wb') as f:
@@ -105,25 +100,23 @@ class Download:
                     raise Exception
             except:
                 count += 1
-                download_log.debug(
-                    'fileUrl:%s;  retry:%s  error:%s' %
-                    (fileUrl, count, str(traceback.format_exc())))
+                download_log.debug(f'fileUrl:{fileUrl}  retry:{count}  error:{traceback.format_exc()}')
             else:
-                download_log.info(
-                    f'download successfull   filePath:{filePath};   fileUrl:{fileUrl};'
-                )
+                download_log.info(f'download successfull   filePath:{filePath}   fileUrl:{fileUrl}')
                 return True
         return False
 
     # download To upload
-    def down_To_up(self,
-                   fileUrl,
-                   filePath,
-                   upUrl=config.GOFATS_URL,
-                   timeout=config.TIMEOUT):
-        self.file_download(fileUrl, filePath, timeout=timeout)
-        resData = self.file_upload(filePath, upUrl=upUrl)
-        content = resData.content
-        jsonData = json.loads(content)
-        url = jsonData['url']
-        return url
+    def down_To_up(self, fileUrl, filePath, upUrl=config.GOFATS_URL, timeout=config.TIMEOUT):
+        if(self.file_download(fileUrl, filePath, timeout=timeout)):
+            resData = self.file_upload(filePath, upUrl=upUrl)
+            if resData:
+                content = resData.content
+                jsonData = json.loads(content)
+                url = jsonData['url']
+                os.remove(filePath)
+                return url
+            else:
+                download_log.warning(f'upload fail upUrl:{upUrl};  purl:{filePath};')
+        else:
+            download_log.warning(f'download fail imgUrl:{fileUrl};  purl:{filePath};')
